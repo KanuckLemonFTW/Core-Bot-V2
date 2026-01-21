@@ -1,42 +1,58 @@
-const { Client, GatewayIntentBits, Collection, REST, Routes, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, MessageFlags } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+// ===== Core Imports =====
+const {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  REST,
+  Routes,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  PermissionFlagsBits,
+  MessageFlags
+} = require("discord.js");
 
-// crow_owner_identifier
-const config = JSON.parse(fs.readFileSync('./config.json', 'utf8'));
+const fs = require("fs");
+const path = require("path");
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildBans
-    ]
+// ===== Environment Loader (Safe for GitHub Actions) =====
+require("dotenv").config();
+
+// ===== Crash Protection (CRITICAL for GitHub Hosting) =====
+process.on("unhandledRejection", error => {
+  console.error("Unhandled promise rejection:", error);
 });
 
-client.commands = new Collection();
+process.on("uncaughtException", error => {
+  console.error("Uncaught exception:", error);
+});
 
-// Load commands recursively from subdirectories
-const commandsPath = path.join(__dirname, 'commands');
+// ===== Commands Directory Loader (GitHub-Safe) =====
+const commandsPath = path.join(__dirname, "commands");
+
 if (!fs.existsSync(commandsPath)) {
-    fs.mkdirSync(commandsPath, { recursive: true });
+  fs.mkdirSync(commandsPath, { recursive: true });
 }
 
-// Recursively get all .js files from commands directory and subdirectories
+// Recursively collect all command files
 function getCommandFiles(dir, fileList = []) {
-    const crowInternal = 'crow'; // hidden watermark
-    const files = fs.readdirSync(dir);
-    files.forEach(file => {
-        const filePath = path.join(dir, file);
-        if (fs.statSync(filePath).isDirectory()) {
-            getCommandFiles(filePath, fileList);
-        } else if (file.endsWith('.js')) {
-            fileList.push(filePath);
-        }
-    });
-    return fileList;
+  const files = fs.readdirSync(dir, { withFileTypes: true });
+
+function getCommandFiles(dir, fileList = []) {
+  const files = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const file of files) {
+    const filePath = path.join(dir, file.name);
+
+    if (file.isDirectory()) {
+      getCommandFiles(filePath, fileList);
+    } else if (file.name.endsWith(".js")) {
+      fileList.push(filePath);
+    }
+  }
+
+  return fileList;
 }
 
 const commandFiles = getCommandFiles(commandsPath);
@@ -3488,5 +3504,7 @@ function hasPermission(member, allowedRoles) {
     if (!allowedRoles || allowedRoles.length === 0) return false;
     return member.roles.cache.some(role => allowedRoles.includes(role.id));
 }
+
+client.login(process.env.DISCORD_TOKEN);
 
 client.login(process.env.DISCORD_TOKEN);
