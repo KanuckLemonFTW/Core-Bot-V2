@@ -1,0 +1,137 @@
+const fs = require('fs');
+const path = require('path');
+
+const TEMP_ROLE_DB_FILE = path.join(__dirname, '../data/temp_roles.json');
+
+function loadDatabase() {
+    try {
+        if (!fs.existsSync(TEMP_ROLE_DB_FILE)) {
+            fs.writeFileSync(TEMP_ROLE_DB_FILE, JSON.stringify({}, null, 2));
+        }
+        const data = fs.readFileSync(TEMP_ROLE_DB_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('Error loading temp role database:', error);
+        return {};
+    }
+}
+
+function saveDatabase(data) {
+    try {
+        const dataDir = path.dirname(TEMP_ROLE_DB_FILE);
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        fs.writeFileSync(TEMP_ROLE_DB_FILE, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error saving temp role database:', error);
+    }
+}
+
+function addTempRole(guildId, userId, roleId, expiresAt) {
+    const db = loadDatabase();
+    if (!db[guildId]) {
+        db[guildId] = {};
+    }
+    if (!db[guildId][userId]) {
+        db[guildId][userId] = [];
+    }
+    
+    // Remove existing temp role for this user/role if it exists
+    db[guildId][userId] = db[guildId][userId].filter(tr => tr.roleId !== roleId);
+    
+    // Add new temp role
+    db[guildId][userId].push({
+        roleId,
+        expiresAt,
+        addedAt: Date.now()
+    });
+    
+    saveDatabase(db);
+}
+
+function removeTempRole(guildId, userId, roleId) {
+    const db = loadDatabase();
+    if (!db[guildId] || !db[guildId][userId]) {
+        return false;
+    }
+    
+    const beforeLength = db[guildId][userId].length;
+    db[guildId][userId] = db[guildId][userId].filter(tr => tr.roleId !== roleId);
+    const afterLength = db[guildId][userId].length;
+    
+    if (beforeLength !== afterLength) {
+        saveDatabase(db);
+        return true;
+    }
+    return false;
+}
+
+function getTempRole(guildId, userId, roleId) {
+    const db = loadDatabase();
+    if (!db[guildId] || !db[guildId][userId]) {
+        return null;
+    }
+    
+    return db[guildId][userId].find(tr => tr.roleId === roleId) || null;
+}
+
+function getAllTempRoles(guildId, userId) {
+    const db = loadDatabase();
+    if (!db[guildId] || !db[guildId][userId]) {
+        return [];
+    }
+    
+    return db[guildId][userId];
+}
+
+function getExpiredTempRoles() {
+    const db = loadDatabase();
+    const expired = [];
+    const now = Date.now();
+    
+    for (const guildId in db) {
+        for (const userId in db[guildId]) {
+            const tempRoles = db[guildId][userId];
+            tempRoles.forEach((tr, index) => {
+                if (tr.expiresAt <= now) {
+                    expired.push({
+                        guildId,
+                        userId,
+                        roleId: tr.roleId,
+                        index
+                    });
+                }
+            });
+        }
+    }
+    
+    return expired;
+}
+
+function removeExpiredTempRole(guildId, userId, roleId) {
+    const db = loadDatabase();
+    if (!db[guildId] || !db[guildId][userId]) {
+        return false;
+    }
+    
+    const beforeLength = db[guildId][userId].length;
+    db[guildId][userId] = db[guildId][userId].filter(tr => tr.roleId !== roleId);
+    const afterLength = db[guildId][userId].length;
+    
+    if (beforeLength !== afterLength) {
+        saveDatabase(db);
+        return true;
+    }
+    return false;
+}
+
+module.exports = {
+    addTempRole,
+    removeTempRole,
+    getTempRole,
+    getAllTempRoles,
+    getExpiredTempRoles,
+    removeExpiredTempRole
+};
+
