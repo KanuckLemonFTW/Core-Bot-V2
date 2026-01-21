@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "blacklist": [""],
+    "globalBan": [""],
+    "rolePerms": [""],
+    "globaltimeout": [""],
+    "bansync": [""],
+    "forceverify": [""],
+    "approveGlobalBan": [""],
+    "ownership": [""],
+    "removePunishment": [""]
+  },
+  "channels": {
+    "globalBanLogs": "",
+    "timeoutLogs": "",
+    "blacklistLogs": "",
+    "verifyLogs": "",
+    "syncLogs": "",
+    "restoreLogs": "",
+    "botProtectionLogs": "",
+    "altDetectionLogs": "",
+    "globalRolestripeLogs": "",
+    "punishmentRemovalLogs": ""
+  },
+  "roles": {
+    "unverified": "",
+    "verified": "",
+    "blacklist": "",
+    "autorole": ""
+  },
+  "settings": {
+    "sendDMs": true,
+    "logAllActions": true,
+    "defaultTimeoutDuration": 3600000
+  },
+  "welcome": {
+    "enabled": false,
+    "channel": "",
+    "title": "",
+    "message": "",
+    "ticketChannel": "",
+    "imageUrl": ""
+  },
+  "botProtection": {
+    "enabled": true,
+    "authorizedUsers": [""]
+  },
+  "altDetection": {
+    "enabled": true,
+    "minimumAccountAgeDays": 14,
+    "logChannel": ""
+  }
+}
