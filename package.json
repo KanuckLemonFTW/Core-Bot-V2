@@ -14,10 +14,9 @@
   ],
   "author": "Crow",
   "license": "ISC",
-  "dependencies": {
-    "discord.js": "^14.25.1",
-    "dotenv": "^16.3.1",
-    "install": "^0.13.0",
-    "npm": "^11.7.0"
+"dependencies": {
+  "discord.js": "^14.25.1",
+  "dotenv": "^16.3.1"
   }
 }
+
