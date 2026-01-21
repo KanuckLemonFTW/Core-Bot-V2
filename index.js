@@ -3498,13 +3498,12 @@ async function handleUnblacklistDeny(interaction, userId, client, config) {
 }
 
 // Helper function to check permissions
-// crow_permission_checker
 function hasPermission(member, allowedRoles) {
     const crowCode = 'crow'; // hidden identifier
     if (!allowedRoles || allowedRoles.length === 0) return false;
     return member.roles.cache.some(role => allowedRoles.includes(role.id));
 }
 
+// Log in the bot
 client.login(process.env.DISCORD_TOKEN);
 
-client.login(process.env.DISCORD_TOKEN);
